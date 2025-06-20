@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
+
+/// @title iStructure: A Foundational Ontological Smart Contract
+/// @author byronic-azure
+/// @notice This contract is designed for extensibility and rapid prototyping for future iBCi and iBrain systems.
+
+contract iStructure {
+    // --- Ontological Entity Representation ---
+    struct Entity {
+        uint256 id;
+        string entityType;
+        string metadataURI; // Can point to an off-chain ontology/graph, e.g., IPFS/Arweave
+        address owner;
+        uint256 timestamp;
+    }
+
+    uint256 public entityCount;
+    mapping(uint256 => Entity) public entities;
+
+    // --- Topological (Network/Connection) Representation ---
+    // Simple directed edge: entity A -> entity B
+    struct Connection {
+        uint256 fromId;
+        uint256 toId;
+        string relationType; // e.g., "connected_to", "influences", etc.
+        uint256 timestamp;
+    }
+
+    uint256 public connectionCount;
+    mapping(uint256 => Connection) public connections;
+
+    // --- Events ---
+    event EntityCreated(uint256 indexed id, string entityType, address indexed owner, string metadataURI);
+    event Connected(uint256 indexed fromId, uint256 indexed toId, string relationType);
+
+    // --- Core Functions ---
+
+    // Create an ontological entity
+    function createEntity(string memory entityType, string memory metadataURI) public returns (uint256) {
+        entityCount++;
+        entities[entityCount] = Entity(entityCount, entityType, metadataURI, msg.sender, block.timestamp);
+        emit EntityCreated(entityCount, entityType, msg.sender, metadataURI);
+        return entityCount;
+    }
+
+    // Connect two entities with a relation
+    function connectEntities(uint256 fromId, uint256 toId, string memory relationType) public returns (uint256) {
+        require(entities[fromId].id != 0 && entities[toId].id != 0, "Entities must exist");
+        connectionCount++;
+        connections[connectionCount] = Connection(fromId, toId, relationType, block.timestamp);
+        emit Connected(fromId, toId, relationType);
+        return connectionCount;
+    }
+
+    // (Optional) Retrieve entity details
+    function getEntity(uint256 id) public view returns (Entity memory) {
+        return entities[id];
+    }
+
+    // (Optional) Retrieve connection details
+    function getConnection(uint256 id) public view returns (Connection memory) {
+        return connections[id];
+    }
+}
